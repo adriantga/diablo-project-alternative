@@ -1,22 +1,103 @@
 ﻿#include "Character.h"
 
+#include "Helpers.h"
+#include <cstring>
+
 Character::~Character()
 {
-    delete myName;
+    delete[] myName;
     myName = nullptr;
 }
 
-Character::Character(const char* aCharacterName, int aStrength, int aAgility, int aVitality) : myAttributes()
+Character::Character(const Character& aOther)
 {
-    const size_t len = std::strlen(aCharacterName);
-    myName = new char[len + 1];
-    strcpy_s(myName, len + 1, aCharacterName);
+    myDiablo = aOther.myDiablo;
+    myAttributes = aOther.myAttributes;
+    myHealth = aOther.myHealth;
+    
+    if (aOther.myName)
+    {
+        const size_t len = std::strlen(aOther.myName);
+        myName = new char[len + 1];
+        strcpy_s(myName, len + 1, aOther.myName);
+    }
+    else
+    {
+        myName = nullptr;
+    }
+}
+
+Character::Character(Character&& aOther) noexcept
+{
+    myDiablo = aOther.myDiablo;
+    myAttributes = aOther.myAttributes;
+    myHealth = aOther.myHealth;
+    myName = aOther.myName;
+    aOther.myName = nullptr;
+}
+
+Character& Character::operator=(const Character& aOther)
+{
+    if (this != &aOther)
+    {
+        delete[] myName;
+        myName = nullptr;
+        
+        myDiablo = aOther.myDiablo;
+        myAttributes = aOther.myAttributes;
+        myHealth = aOther.myHealth;
+        
+        if (aOther.myName)
+        {
+            const size_t len = std::strlen(aOther.myName);
+            myName = new char[len + 1];
+            strcpy_s(myName, len + 1, aOther.myName);
+        }
+    }
+    return *this;
+}
+
+Character& Character::operator=(Character&& aOther) noexcept
+{
+    if (this != &aOther)
+    {
+        delete[] myName;
+        
+        myDiablo = aOther.myDiablo;
+        myAttributes = aOther.myAttributes;
+        myHealth = aOther.myHealth;
+        myName = aOther.myName;
+        aOther.myName = nullptr;
+    }
+    return *this;
+}
+
+Character::Character(const char* aCharacterName, const Diablo& aDiablo, int aStrength, int aAgility, int aVitality)
+{
+    this->myDiablo = aDiablo;
+    
+    if (aCharacterName)
+    {
+        const size_t len = std::strlen(aCharacterName);
+        myName = new char[len + 1];
+        strcpy_s(myName, len + 1, aCharacterName);
+    }
+    else
+    {
+        myName = nullptr;
+    }
     
     SetStrength(aStrength);
     SetAgility(aAgility);
     SetVitality(aVitality);
     
     ResetHealth();
+}
+
+void Character::TakeDamage(int aDamage)
+{
+    aDamage = Min(aDamage, 1);
+    myHealth -= aDamage;
 }
 
 void Character::SetStrength(int aStrength)

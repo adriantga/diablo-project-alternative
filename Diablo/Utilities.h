@@ -28,7 +28,7 @@ struct ConsoleColors
     static constexpr int CYAN = 36;
     static constexpr int WHITE = 37;
     
-    static std::string GetColor(int aColor, bool aBackground = false)
+    static std::string StartColor(int aColor, bool aBackground = false)
     {
         return "\033[" + std::to_string((aBackground ? aColor + 10 : aColor)) + 'm';
     }
@@ -42,11 +42,10 @@ struct ConsoleColors
 struct Cheats
 {
     bool hasGodMode;
-    bool hasInstantWin;
+    bool hasOneShot;
 };
 
 struct Diablo
 {
-    Character* player;
     Cheats cheats;
 };

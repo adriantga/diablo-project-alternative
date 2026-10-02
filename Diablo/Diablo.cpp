@@ -1,14 +1,14 @@
-#include "Character.h"
+#include "Game.h"
 #include "UI.h"
 #include "Utilities.h"
 
 int main()
 {
-    Character player = Character("Wanderer", 5, 4, 60);
     Cheats cheats = {};
     
-    Diablo diablo = { &player, cheats };
+    Diablo diablo = { cheats };
+    Game game = Game(diablo);
     
-    MainMenu::Draw(diablo);
+    MainMenu::Draw(diablo, game);
     return 0;
 }

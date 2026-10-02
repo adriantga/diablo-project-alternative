@@ -154,16 +154,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BattleController.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Diablo.cpp" />
     <ClCompile Include="Door.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BattleController.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="Door.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="UI.h" />
