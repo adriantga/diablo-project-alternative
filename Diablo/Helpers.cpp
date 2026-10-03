@@ -53,19 +53,32 @@ static bool HasCheatsEnabled(const Diablo& aDiablo) { return aDiablo.cheats.hasG
 void ShowStats(const Character& aCharacter, const Diablo& aDiablo)
 {
     int maxHealth = aCharacter.GetMaxHealth();
+    StatModifiers mods = aCharacter.GetTotalModifiers();
     
     DrawBreakerLine(LineType::Hyphen);
     std::cout << aCharacter.GetCharacterName() << "'s Stats" << '\n';
     DrawBreakerLine(LineType::Hyphen);
-    std::cout << "Strength: " << aCharacter.GetStrength() << "\n";
-    std::cout << "Agility: " << aCharacter.GetAgility() << "\n";
-    std::cout << "Vitality: " << aCharacter.GetVitality() << "\n";
+    std::cout << "Strength: " << aCharacter.GetStrength() << " (Base: " << aCharacter.GetBaseStrength() << ", Mod: " << (mods.strength >= 0 ? "+" : "") << mods.strength << ")\n";
+    std::cout << "Agility: " << aCharacter.GetAgility() << " (Base: " << aCharacter.GetBaseAgility() << ", Mod: " << (mods.agility >= 0 ? "+" : "") << mods.agility << ")\n";
+    std::cout << "Vitality: " << aCharacter.GetVitality() << " (Base: " << aCharacter.GetBaseVitality() << ", Mod: " << (mods.vitality >= 0 ? "+" : "") << mods.vitality << ")\n";
     DrawBreakerLine(LineType::Hyphen);
-    std::cout << "Damage: " << aCharacter.GetAttackValue() << '\n';
-    std::cout << "Defense: " << aCharacter.GetDefense() << '\n';
-    std::cout << "Carry Cap: " << aCharacter.GetCarryCapacity() << '\n';
+    std::cout << "Damage: " << aCharacter.GetAttackValue() << " (Mod: " << (mods.attack >= 0 ? "+" : "") << mods.attack << ")\n";
+    std::cout << "Defense: " << aCharacter.GetDefense() << " (Mod: " << (mods.defense >= 0 ? "+" : "") << mods.defense << ")\n";
+    std::cout << "Carry Cap: " << aCharacter.GetCarryCapacity() << " (Weight: " << aCharacter.GetInventoryWeight() << "/" << aCharacter.GetCarryCapacity() << " kg)\n";
     DrawBreakerLine(LineType::Hyphen);
-    std::cout << "Health: " << aCharacter.GetHealth() << " / " << maxHealth << '\n';
+    std::cout << "Health: " << aCharacter.GetHealth() << " / " << maxHealth << " (Mod: " << (mods.maxHealth >= 0 ? "+" : "") << mods.maxHealth << ")\n";
+    
+    const auto& spells = aCharacter.GetActiveSpells();
+    if (!spells.empty())
+    {
+        DrawBreakerLine(LineType::Hyphen);
+        std::cout << "Active Spells:\n";
+        for (const auto& spell : spells)
+        {
+            std::cout << "- ";
+            spell.DisplayInfo();
+        }
+    }
     
     if (HasCheatsEnabled(aDiablo))
     {
@@ -79,6 +92,40 @@ void ShowStats(const Character& aCharacter, const Diablo& aDiablo)
         if (aDiablo.cheats.hasOneShot)
         {
             std::cout << ConsoleColors::StartColor(ConsoleColors::YELLOW) << "One-Shot Enabled" << ConsoleColors::EndColor() << '\n';
+        }
+    }
+}
+
+void ShowInventory(const Character& aCharacter)
+{
+    DrawBreakerLine(LineType::Hyphen);
+    std::cout << aCharacter.GetCharacterName() << "'s Inventory" << '\n';
+    DrawBreakerLine(LineType::Hyphen);
+    const auto& items = aCharacter.GetInventory();
+    if (items.empty())
+    {
+        std::cout << "Inventory is empty.\n";
+    }
+    else
+    {
+        for (size_t i = 0; i < items.size(); ++i)
+        {
+            std::cout << "[" << (i + 1) << "] ";
+            items[i].DisplayInfo();
+        }
+    }
+    DrawBreakerLine(LineType::Hyphen);
+    std::cout << "Total Weight: " << aCharacter.GetInventoryWeight() << " / " << aCharacter.GetCarryCapacity() << " kg\n";
+
+    const auto& spells = aCharacter.GetActiveSpells();
+    if (!spells.empty())
+    {
+        DrawBreakerLine(LineType::Hyphen);
+        std::cout << "Active Spells:\n";
+        for (const auto& spell : spells)
+        {
+            std::cout << "- ";
+            spell.DisplayInfo();
         }
     }
 }

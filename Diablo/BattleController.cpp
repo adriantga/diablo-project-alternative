@@ -69,6 +69,64 @@ void BattleController::Battle(Game& aGame, Character& aPlayer, Character& aEnemy
     aPlayer = aGame.GetPlayer();
 }
 
+static void DropEnemyLoot(Room& aRoom, const Character& aEnemy)
+{
+    // Chance to drop an item (60% chance)
+    if (GetRandomNumber(1, 100) <= 60)
+    {
+        int roll = GetRandomNumber(1, 6);
+        Item drop;
+        if (roll == 1)
+        {
+            StatModifiers mods;
+            mods.attack = 2;
+            mods.strength = 1;
+            drop = Item("Iron Dagger", 1, mods);
+        }
+        else if (roll == 2)
+        {
+            StatModifiers mods;
+            mods.defense = 3;
+            mods.vitality = 1;
+            drop = Item("Reinforced Buckler", 2, mods);
+        }
+        else if (roll == 3)
+        {
+            StatModifiers mods;
+            mods.strength = 2;
+            mods.carryCapacity = 2;
+            drop = Item("Brawler's Belt", 1, mods);
+        }
+        else if (roll == 4)
+        {
+            StatModifiers mods;
+            mods.agility = 2;
+            mods.defense = 1;
+            drop = Item("Shadow Boots", 1, mods);
+        }
+        else if (roll == 5)
+        {
+            StatModifiers mods;
+            mods.maxHealth = 25;
+            mods.vitality = 2;
+            drop = Item("Vitality Ring", 0, mods);
+        }
+        else
+        {
+            StatModifiers mods;
+            mods.attack = 4;
+            mods.agility = 1;
+            drop = Item("Serrated Blade", 2, mods);
+        }
+
+        aRoom.AddItem(drop);
+        std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN)
+                  << aEnemy.GetCharacterName() << " dropped: ";
+        drop.DisplayInfo();
+        std::cout << ConsoleColors::EndColor();
+    }
+}
+
 void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int aTargetIndex)
 {
     if (aTargetIndex < 0 || aTargetIndex >= aRoom.GetEnemyCount())
@@ -92,6 +150,7 @@ void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int
     if (!targetEnemy.IsAlive())
     {
         std::cout << targetEnemy.GetCharacterName() << " has been defeated!\n";
+        DropEnemyLoot(aRoom, targetEnemy);
     }
     
     for (int i = 0; i < aRoom.GetEnemyCount(); i++)

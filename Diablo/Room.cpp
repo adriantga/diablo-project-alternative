@@ -33,6 +33,8 @@ void Room::EnterCombat(const Game& aGame) const
     
     int viewStatsIndex = GetEnemyCount() + 1;
     std::cout << '[' << viewStatsIndex << "] View stats\n";
+    int viewInventoryIndex = GetEnemyCount() + 2;
+    std::cout << '[' << viewInventoryIndex << "] View inventory\n";
 }
 
 void Room::RemoveEnemy(int aIndex)
@@ -55,5 +57,29 @@ void Room::RemoveDeadEnemies()
         {
             ++it;
         }
+    }
+}
+
+void Room::RemoveItem(int aIndex)
+{
+    if (aIndex >= 0 && aIndex < static_cast<int>(myItems.size()))
+    {
+        myItems.erase(myItems.begin() + aIndex);
+    }
+}
+
+void Room::RemoveSpell(int aIndex)
+{
+    if (aIndex >= 0 && aIndex < static_cast<int>(mySpells.size()))
+    {
+        mySpells.erase(mySpells.begin() + aIndex);
+    }
+}
+
+void Room::RemoveChest(int aIndex)
+{
+    if (aIndex >= 0 && aIndex < static_cast<int>(myChests.size()))
+    {
+        myChests.erase(myChests.begin() + aIndex);
     }
 }

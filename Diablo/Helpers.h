@@ -5,6 +5,7 @@
 enum class LineType;
 
 void ShowStats(const Character& aCharacter, const Diablo& aDiablo);
+void ShowInventory(const Character& aCharacter);
 int GetRandomNumber(const int aMin, const int aMax);
 int CalculateDamage(const Character& aSource, const Character& aTarget);
 void DrawMenuLine(LineType aMenuLineType);

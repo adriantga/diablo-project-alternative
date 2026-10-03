@@ -166,10 +166,13 @@
   <ItemGroup>
     <ClInclude Include="BattleController.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="Chest.h" />
     <ClInclude Include="Door.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Spell.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>

@@ -2,6 +2,9 @@
 #include <vector>
 
 #include "Character.h"
+#include "Item.h"
+#include "Chest.h"
+#include "Spell.h"
 
 class Game;
 
@@ -11,6 +14,9 @@ class Room
     const char* myName = nullptr;
     int myId = -1;
     std::vector<Character> myEnemies = {};
+    std::vector<Item> myItems = {};
+    std::vector<Chest> myChests = {};
+    std::vector<Spell> mySpells = {};
     Diablo myDiablo;
 public:
     Room(const char* aRoomName, const Diablo& aDiablo);
@@ -38,4 +44,23 @@ public:
     void RemoveDeadEnemies();
     
     int GetEnemyCount() const { return static_cast<int>(myEnemies.size()); }
+
+    void AddItem(const Item& aItem) { myItems.push_back(aItem); }
+    void AddChest(const Chest& aChest) { myChests.push_back(aChest); }
+    void AddSpell(const Spell& aSpell) { mySpells.push_back(aSpell); }
+
+    const std::vector<Item>& GetItems() const { return myItems; }
+    std::vector<Item>& GetItems() { return myItems; }
+    const std::vector<Chest>& GetChests() const { return myChests; }
+    std::vector<Chest>& GetChests() { return myChests; }
+    const std::vector<Spell>& GetSpells() const { return mySpells; }
+    std::vector<Spell>& GetSpells() { return mySpells; }
+
+    bool HasItems() const { return !myItems.empty(); }
+    bool HasChests() const { return !myChests.empty(); }
+    bool HasSpells() const { return !mySpells.empty(); }
+
+    void RemoveItem(int aIndex);
+    void RemoveSpell(int aIndex);
+    void RemoveChest(int aIndex);
 };
