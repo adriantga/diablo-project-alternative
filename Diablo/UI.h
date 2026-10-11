@@ -1,13 +1,12 @@
 ﻿#pragma once
-#include "Game.h"
 #include "Utilities.h"
 
 namespace MainMenu
 {
-    void Draw(Diablo& aDiablo, Game& aGame);
+    void Draw(Diablo& aDiablo);
 }
 
 namespace CheatsMenu
 {
-    void Draw(Diablo& aDiablo, Game& aGame);
+    void Draw(Diablo& aDiablo);
 }

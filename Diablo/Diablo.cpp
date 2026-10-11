@@ -1,14 +1,16 @@
-#include "Game.h"
+
 #include "UI.h"
 #include "Utilities.h"
 
 int main()
 {
-    Cheats cheats = {};
+    const Cheats cheats = {};
+    const LoreItems loreItems = {};
+    const LoreChests loreChests = {};
+    const LoreSpells loreSpells = {};
     
-    Diablo diablo = { cheats };
-    Game game = Game(diablo);
+    Diablo diablo = { loreItems, loreSpells, loreChests, cheats };
+    MainMenu::Draw(diablo);
     
-    MainMenu::Draw(diablo, game);
     return 0;
 }

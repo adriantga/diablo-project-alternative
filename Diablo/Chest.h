@@ -1,33 +1,37 @@
 #pragma once
 #include <string>
 #include <vector>
+
 #include "Item.h"
 
 class Chest
 {
-private:
     std::string myName;
     std::vector<Item> myItems;
     bool myIsOpen = false;
-
+    
 public:
     Chest() = default;
-    Chest(const std::string& aName) : myName(aName), myIsOpen(false) {}
-    Chest(const std::string& aName, const std::vector<Item>& aItems)
-        : myName(aName), myItems(aItems), myIsOpen(false) {}
-
+    Chest(const std::string aName) : myName(aName)
+    {
+        
+    }
+    
+    Chest(const std::string aName, const std::vector<Item>& aItems) : myName(aName), myItems(aItems)
+    {
+        
+    }
+    
     const std::string& GetName() const { return myName; }
+    const std::vector<Item>& GetItems() const { return myItems; }
     bool IsOpen() const { return myIsOpen; }
-    void SetOpen(bool aIsOpen) { myIsOpen = aIsOpen; }
-
+    void SetOpen(const bool aIsOpen) { myIsOpen = aIsOpen; }
+    
     void AddItem(const Item& aItem)
     {
         myItems.push_back(aItem);
     }
-
-    const std::vector<Item>& GetItems() const { return myItems; }
-    std::vector<Item>& GetItems() { return myItems; }
-
+    
     std::vector<Item> OpenAndTakeItems()
     {
         myIsOpen = true;
@@ -35,4 +39,5 @@ public:
         myItems.clear();
         return dropped;
     }
+    
 };

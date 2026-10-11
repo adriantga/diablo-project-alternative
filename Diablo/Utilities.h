@@ -1,8 +1,75 @@
-﻿#pragma once
+#pragma once
+
+#include <iostream>
 #include <string>
+#include "Helpers.h"
 #include <vector>
 
+#include "Chest.h"
+#include "Item.h"
+#include "Spell.h"
+
 class Character;
+struct LoreItems;
+struct LoreSpells;
+struct LoreChests;
+struct IntCasterUtility;
+
+struct StatModifiers
+{
+    int strength = 0;
+    int agility = 0;
+    int vitality = 0;
+    int attack = 0;
+    int defense = 0;
+    int maxHealth = 0;
+    int carryCapacity = 0;
+    
+    StatModifiers() = default;
+    
+    StatModifiers(const int aStrength, const int aAgility, const int aVitality, const int aAttack = 0, const int aDefense = 0, const int aMaxHealth = 0, const int aCarryCapacity = 0) 
+    : strength(aStrength), agility(aAgility), vitality(aVitality), attack(aAttack), defense(aDefense), maxHealth(aMaxHealth), carryCapacity(aCarryCapacity) {}
+    
+    StatModifiers Add(const StatModifiers& aOther)
+    {
+        strength += aOther.strength;
+        agility += aOther.agility;
+        vitality += aOther.vitality;
+        attack += aOther.attack;
+        defense += aOther.defense;
+        maxHealth += aOther.maxHealth;
+        carryCapacity += aOther.carryCapacity;
+        return *this;
+    }
+    
+    void PrintModifier(const int& aModifier, const char* aModifierName, bool& aFlag) const
+    {
+        if (aModifier != 0)
+        {
+            const bool hasModifier = HasExceeded(aModifier, 0);
+            std::cout << (hasModifier ? "+" : "") << aModifier << " " << aModifierName << " ";
+            aFlag = true;
+        }
+    }
+    
+    void PrintModifiers() const
+    {
+        bool hasAny = false;
+        
+        PrintModifier(strength, "Str", hasAny);
+        PrintModifier(agility, "Agi", hasAny);
+        PrintModifier(vitality, "Vit", hasAny);
+        PrintModifier(attack, "DMG", hasAny);
+        PrintModifier(defense, "DEF", hasAny);
+        PrintModifier(maxHealth, "HP", hasAny);
+        PrintModifier(carryCapacity, "Carry Cap", hasAny);
+        
+        if (!hasAny)
+        {
+            std::cout << "None";
+        }
+    }
+};
 
 struct CharacterAttributes
 {
@@ -11,26 +78,104 @@ struct CharacterAttributes
     int vitality;
 };
 
-enum class LineType
+struct StatRandomizerConfig
 {
-    EqualSign,
-    Hyphen
+private:
+    static constexpr int MIN_VALUE = 1;
+    static constexpr int MAX_BASE_SKILL = 10;
+    static constexpr int MAX_VALUE = 50;
+    
+public:
+    int minStrength = MIN_VALUE;
+    int maxStrength = MAX_BASE_SKILL;
+    int minAgility = MIN_VALUE;
+    int maxAgility = MAX_BASE_SKILL;
+    int minVitality = MIN_VALUE;
+    int maxVitality = MAX_BASE_SKILL;
+    int minHealth = MIN_VALUE;
+    int maxHealth = MAX_VALUE;
+    int minDefense = MIN_VALUE;
+    int maxDefense = MAX_VALUE;
+    int minAttack = MIN_VALUE;
+    int maxAttack = MAX_VALUE;
+};
+
+struct ItemConfig
+{
+    std::vector<const char*> itemStarter = {"Trophy of the"};
+    std::vector<const char*> itemAccessory = {"Amulet", "Ring", "Helmet", "Chestplate", "Leggings", "Boots", "Backpack"};
+    std::vector<const char*> itemWeapon = {"Sword", "Dagger", "Halberd", "Battle Axe", "Kunai", "Katana"};
+};
+
+struct SpellConfig
+{
+    int minDuration = 1;
+    int maxDuration = 10;
+    std::vector<const char*> spellStarter = { "Blessings of the", "Might of the", "War Cry of the", "Soul of the" };
+};
+
+struct ChestConfig
+{
+    int minItemCount = 1;
+    int maxItemCount = 3;
+};
+
+enum class EnemyTypes
+{
+    Skeleton = 0,
+    Wraith = 1,
+    Brawler = 2,
+    Undead = 3,
+    Titan = 4,
+    Count = 5
+};
+
+struct Enemies
+{
+    static int GetType(const EnemyTypes aEnemyType)
+    {
+        return static_cast<int>(aEnemyType);
+    }
+};
+
+enum class RoomType
+{
+    EntranceRoom = 0,
+    CathedralRoom = 1,
+    ArmoryRoom = 2,
+    KitchenRoom = 3,
+    CellsRoom = 4,
+};
+
+struct Rooms
+{
+    static int GetRoom(RoomType aRoomType)
+    {
+        return static_cast<int>(aRoomType);
+    }
+};
+
+enum class Color
+{
+    Red = 31,
+    Green = 32,
+    Yellow = 33,
+    Blue = 34,
+    Magenta = 35,
+    Cyan = 36
 };
 
 struct ConsoleColors
 {
-    static constexpr int BLACK = 30;
-    static constexpr int RED = 31;
-    static constexpr int GREEN = 32;
-    static constexpr int YELLOW = 33;
-    static constexpr int BLUE = 34;
-    static constexpr int MAGENTA = 35;
-    static constexpr int CYAN = 36;
-    static constexpr int WHITE = 37;
-    
-    static std::string StartColor(int aColor, bool aBackground = false)
+    static int GetColor(const Color aColor)
     {
-        return "\033[" + std::to_string((aBackground ? aColor + 10 : aColor)) + 'm';
+        return static_cast<int>(aColor);
+    }
+    
+    static std::string StartColor(const Color aColor, const bool aBackground = false)
+    {
+        const int colorResult = GetColor(aColor);
+        return "\033[" + std::to_string(aBackground ? colorResult + 10 : colorResult) + 'm';
     }
     
     static std::string EndColor()
@@ -39,13 +184,91 @@ struct ConsoleColors
     }
 };
 
+enum class CharacterID
+{
+    Player,
+    Enemy
+};
+
 struct Cheats
 {
     bool hasGodMode;
     bool hasOneShot;
 };
 
+enum class LineType
+{
+    Dash,
+    EqualSign
+};
+
+enum class ItemTypes
+{
+    Dagger,
+    Sword,
+    Ring // No clue if I should have this but for now it can stay.
+};
+
+enum class OptionType
+{
+    Move,
+    PickItem,
+    OpenChest,
+    ReadSpell,
+    ViewInventory,
+    ViewStats
+};
+
+struct ActionOption
+{
+    OptionType type;
+    int data;
+    std::string text;
+};
+
+struct LoreItems
+{
+    // Room-specific items
+    Item wornDagger = Item("Worn Dagger", 1, StatModifiers(0, 0, 0, 1, 0, 0, 0));
+    Item travelersBoots = Item("Traveler's Boots", 1, StatModifiers(0, 1, 0, 0, 1, 0, 0));
+    Item backpack = Item("Backpack", 1, StatModifiers(0, 0, 0, 0, 0, 0, 10));
+    Item trophyOfTheHero = Item("Trophy of the Hero", 10, StatModifiers(10, 10, 10, 20, 20, 20, 0));
+    
+    // Items dropped by enemies
+    Item ironDagger = Item("Iron Dagger", 1, StatModifiers(1, 0, 0, 2, 0, 0, 0));
+    Item ironSword = Item("Iron Sword", 1, StatModifiers(2, 0, 0, 4, 0, 0, 0));
+    Item strangeOrb = Item("Strange Orb", 4, StatModifiers(3, 0, 3, 0, 3, 0, 0));
+    Item agilityRing = Item("Agility Ring", 5, StatModifiers(0, 2, 0, 0, 25, 0, 0));
+    Item vitalityRing = Item("Vitality Ring", 5, StatModifiers(0, 0, 2, 0, 0, 25, 0));
+    Item strengthRing = Item("Strength Ring", 5, StatModifiers(2, 0, 0, 25, 0, 0, 0));
+    
+    std::vector<Item> enemyDrops = 
+    {
+        ironDagger,
+        ironSword,
+        strangeOrb,
+        agilityRing,
+        vitalityRing,
+        strengthRing
+    };
+};
+
+struct LoreChests
+{
+    Chest altarChest = Chest("Altar Chest");
+};
+
+struct LoreSpells
+{
+    Spell warCry = Spell("War Cry", 4, StatModifiers(4, 4, 4, 15, 15, 20, 0));
+    Spell blessingsOfTheTraveler = Spell("Blessings of the Traveler", 3, StatModifiers(0, 6, 4, 0, 0, 0, 5));
+    Spell mightOfTheWarrior = Spell("Might of The Warrior", 3, StatModifiers(0, 0, 0, 50, 50, 50, 0));
+};
+
 struct Diablo
 {
+    LoreItems loreItems;
+    LoreSpells loreSpells;
+    LoreChests loreChests;
     Cheats cheats;
 };

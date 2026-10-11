@@ -1,18 +1,34 @@
-﻿#include "BattleController.h"
+#include "BattleController.h"
 
-#include <iostream>
-
-#include "Game.h"
 #include "Helpers.h"
-#include "Room.h"
+
+static void DropEnemyLoot(Room& aRoom, const Character& aDeadEnemy, const LoreItems& aLoreItems)
+{
+    if (aLoreItems.enemyDrops.empty())
+    {
+        return;
+    }
+
+    constexpr int MIN_ROLL = 1;
+    constexpr int MAX_ROLL = 100;
+
+    if (GetRandomNumber(MIN_ROLL, MAX_ROLL) <= 60)
+    {
+        const int dropCount = static_cast<int>(aLoreItems.enemyDrops.size());
+        const int roll = GetRandomNumber(0, dropCount - 1);
+        
+        Item drop = aLoreItems.enemyDrops[roll];
+        aRoom.AddItem(drop);
+        std::cout << ConsoleColors::StartColor(Color::Blue) << aDeadEnemy.GetCharacterName() << " dropped: ";
+        drop.DisplayInfo();
+        std::cout << ConsoleColors::EndColor();
+    }
+}
 
 void BattleController::DisplayHealth(const Character& aPlayer, const Character& aEnemy)
 {
     DisplayHealth(aPlayer);
     DisplayHealth(aEnemy);
-    
-    if (aPlayer.IsAlive()) std::cout << "Player Health: " << aPlayer.GetHealth() << " / " << aPlayer.GetMaxHealth() << '\n';
-    if (aEnemy.IsAlive()) std::cout << "Enemy Health: " << aEnemy.GetHealth() << " / " << aEnemy.GetMaxHealth() << '\n';
 }
 
 void BattleController::DisplayHealth(const Character& aPlayer, const std::vector<Character>& aEnemies)
@@ -30,7 +46,7 @@ void BattleController::DisplayHealth(const Character& aCharacter)
     if (aCharacter.IsAlive()) std::cout << aCharacter.GetCharacterName() << " Health: " << aCharacter.GetHealth() << " / " << aCharacter.GetMaxHealth() << '\n';
 }
 
-void BattleController::Battle(Diablo& aDiablo, Game& aGame, Character& aEnemy)
+void BattleController::Battle(const Diablo& aDiablo, Game& aGame, Character& aEnemy)
 {
     while (aGame.GetPlayer().IsAlive() && aEnemy.IsAlive())
     {
@@ -38,7 +54,7 @@ void BattleController::Battle(Diablo& aDiablo, Game& aGame, Character& aEnemy)
         if (aDiablo.cheats.hasOneShot)
         {
             playerDamage = 9999999;
-            std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "One shot is currently active!" << ConsoleColors::EndColor() << '\n';
+            std::cout << ConsoleColors::StartColor(Color::Green) << "One shot is currently active!" << ConsoleColors::EndColor() << '\n';
         }
         
         aEnemy.TakeDamage(playerDamage);
@@ -54,7 +70,7 @@ void BattleController::Battle(Diablo& aDiablo, Game& aGame, Character& aEnemy)
         if (aDiablo.cheats.hasGodMode)
         {
             enemyDamage = 0;
-            std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "God mode is active. Enemy dealt 0 damage." << ConsoleColors::EndColor() << '\n';
+            std::cout << ConsoleColors::StartColor(Color::Green) << "God mode is active. Enemy dealt 0 damage." << ConsoleColors::EndColor() << '\n';
         }
         
         aGame.GetPlayer().TakeDamage(enemyDamage);
@@ -64,70 +80,12 @@ void BattleController::Battle(Diablo& aDiablo, Game& aGame, Character& aEnemy)
 
 void BattleController::Battle(Game& aGame, Character& aPlayer, Character& aEnemy)
 {
-    Diablo diablo = aGame.GetDiablo();
+    const Diablo diablo = aGame.GetDiablo();
     Battle(diablo, aGame, aEnemy);
-    aPlayer = aGame.GetPlayer();
+    aPlayer.Set(aGame.GetPlayer());
 }
 
-static void DropEnemyLoot(Room& aRoom, const Character& aEnemy)
-{
-    // Chance to drop an item (60% chance)
-    if (GetRandomNumber(1, 100) <= 60)
-    {
-        int roll = GetRandomNumber(1, 6);
-        Item drop;
-        if (roll == 1)
-        {
-            StatModifiers mods;
-            mods.attack = 2;
-            mods.strength = 1;
-            drop = Item("Iron Dagger", 1, mods);
-        }
-        else if (roll == 2)
-        {
-            StatModifiers mods;
-            mods.defense = 3;
-            mods.vitality = 1;
-            drop = Item("Reinforced Buckler", 2, mods);
-        }
-        else if (roll == 3)
-        {
-            StatModifiers mods;
-            mods.strength = 2;
-            mods.carryCapacity = 2;
-            drop = Item("Brawler's Belt", 1, mods);
-        }
-        else if (roll == 4)
-        {
-            StatModifiers mods;
-            mods.agility = 2;
-            mods.defense = 1;
-            drop = Item("Shadow Boots", 1, mods);
-        }
-        else if (roll == 5)
-        {
-            StatModifiers mods;
-            mods.maxHealth = 25;
-            mods.vitality = 2;
-            drop = Item("Vitality Ring", 0, mods);
-        }
-        else
-        {
-            StatModifiers mods;
-            mods.attack = 4;
-            mods.agility = 1;
-            drop = Item("Serrated Blade", 2, mods);
-        }
-
-        aRoom.AddItem(drop);
-        std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN)
-                  << aEnemy.GetCharacterName() << " dropped: ";
-        drop.DisplayInfo();
-        std::cout << ConsoleColors::EndColor();
-    }
-}
-
-void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int aTargetIndex)
+void BattleController::BattleTurn(const Diablo& aDiablo, Game& aGame, Room& aRoom, const int aTargetIndex)
 {
     if (aTargetIndex < 0 || aTargetIndex >= aRoom.GetEnemyCount())
     {
@@ -135,13 +93,13 @@ void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int
     }
     
     ClearScreen();
-    Character& targetEnemy = aRoom.GetEnemyRef(aTargetIndex);
+    Character& targetEnemy = aRoom.GetEnemyReference(aTargetIndex);
     
     int playerDamage = CalculateDamage(aGame.GetPlayer(), targetEnemy);
     if (aDiablo.cheats.hasOneShot)
     {
         playerDamage = 9999999;
-        std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "One shot is currently active!" << ConsoleColors::EndColor() << '\n';
+        std::cout << ConsoleColors::StartColor(Color::Green) << "One shot is currently active!" << ConsoleColors::EndColor() << '\n';
     }
     
     targetEnemy.TakeDamage(playerDamage);
@@ -150,12 +108,12 @@ void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int
     if (!targetEnemy.IsAlive())
     {
         std::cout << targetEnemy.GetCharacterName() << " has been defeated!\n";
-        DropEnemyLoot(aRoom, targetEnemy);
+        DropEnemyLoot(aRoom, targetEnemy, aGame.GetDiablo().loreItems);
     }
     
     for (int i = 0; i < aRoom.GetEnemyCount(); i++)
     {
-        Character& enemy = aRoom.GetEnemyRef(i);
+        Character& enemy = aRoom.GetEnemyReference(i);
         if (enemy.IsAlive())
         {
             int enemyDamage = CalculateDamage(enemy, aGame.GetPlayer());
@@ -163,7 +121,7 @@ void BattleController::BattleTurn(Diablo& aDiablo, Game& aGame, Room& aRoom, int
             if (aDiablo.cheats.hasGodMode)
             {
                 enemyDamage = 0;
-                std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "God mode is active. Enemy dealt 0 damage." << ConsoleColors::EndColor() << '\n';
+                std::cout << ConsoleColors::StartColor(Color::Green) << "God mode is active. Enemy dealt 0 damage." << ConsoleColors::EndColor() << '\n';
             }
             
             aGame.GetPlayer().TakeDamage(enemyDamage);

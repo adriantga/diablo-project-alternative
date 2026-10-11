@@ -1,5 +1,4 @@
-﻿#include "Character.h"
-
+#include "Character.h"
 #include "Helpers.h"
 #include <cstring>
 
@@ -9,6 +8,26 @@ Character::~Character()
     myName = nullptr;
 }
 
+void Character::SetName(const char* aName, const bool aRemoveOld)
+{
+    if (myName)
+    {
+        delete[] myName;
+        myName = nullptr;
+    }
+
+    if (aName)
+    {
+        const size_t len = std::strlen(aName);
+        myName = new char[len + 1];
+        strcpy_s(myName, len + 1, aName);
+    }
+    else if (!aName && aRemoveOld)
+    {
+        myName = nullptr;
+    }
+}
+
 Character::Character(const Character& aOther)
 {
     myDiablo = aOther.myDiablo;
@@ -16,31 +35,16 @@ Character::Character(const Character& aOther)
     myHealth = aOther.myHealth;
     myInventory = aOther.myInventory;
     myActiveSpells = aOther.myActiveSpells;
-    
-    if (aOther.myName)
-    {
-        const size_t len = std::strlen(aOther.myName);
-        myName = new char[len + 1];
-        strcpy_s(myName, len + 1, aOther.myName);
-    }
-    else
-    {
-        myName = nullptr;
-    }
+    myType = aOther.myType;
+    myAttack = aOther.myAttack;
+    myDefense = aOther.myDefense;
+    myMaxHealth = aOther.myMaxHealth;
+    myUseDirectStats = aOther.myUseDirectStats;
+   
+    SetName(aOther.myName, true);
 }
 
-Character::Character(Character&& aOther) noexcept
-{
-    myDiablo = aOther.myDiablo;
-    myAttributes = aOther.myAttributes;
-    myHealth = aOther.myHealth;
-    myInventory = std::move(aOther.myInventory);
-    myActiveSpells = std::move(aOther.myActiveSpells);
-    myName = aOther.myName;
-    aOther.myName = nullptr;
-}
-
-Character& Character::operator=(const Character& aOther)
+Character Character::Set(const Character& aOther)
 {
     if (this != &aOther)
     {
@@ -52,48 +56,27 @@ Character& Character::operator=(const Character& aOther)
         myHealth = aOther.myHealth;
         myInventory = aOther.myInventory;
         myActiveSpells = aOther.myActiveSpells;
-        
-        if (aOther.myName)
-        {
-            const size_t len = std::strlen(aOther.myName);
-            myName = new char[len + 1];
-            strcpy_s(myName, len + 1, aOther.myName);
-        }
+        myType = aOther.myType;
+        myAttack = aOther.myAttack;
+        myDefense = aOther.myDefense;
+        myMaxHealth = aOther.myMaxHealth;
+        myUseDirectStats = aOther.myUseDirectStats;
+        SetName(aOther.myName, true);
     }
+    
     return *this;
 }
 
-Character& Character::operator=(Character&& aOther) noexcept
+Character& Character::operator=(const Character& aOther)
 {
-    if (this != &aOther)
-    {
-        delete[] myName;
-        
-        myDiablo = aOther.myDiablo;
-        myAttributes = aOther.myAttributes;
-        myHealth = aOther.myHealth;
-        myInventory = std::move(aOther.myInventory);
-        myActiveSpells = std::move(aOther.myActiveSpells);
-        myName = aOther.myName;
-        aOther.myName = nullptr;
-    }
+    Set(aOther);
     return *this;
 }
 
-Character::Character(const char* aCharacterName, const Diablo& aDiablo, int aStrength, int aAgility, int aVitality)
+Character::Character(const char* aCharacterName, const Diablo& aDiablo, const int aStrength, const int aAgility, const int aVitality)
 {
     this->myDiablo = aDiablo;
-    
-    if (aCharacterName)
-    {
-        const size_t len = std::strlen(aCharacterName);
-        myName = new char[len + 1];
-        strcpy_s(myName, len + 1, aCharacterName);
-    }
-    else
-    {
-        myName = nullptr;
-    }
+    SetName(aCharacterName, true);
     
     SetStrength(aStrength);
     SetAgility(aAgility);
@@ -102,28 +85,25 @@ Character::Character(const char* aCharacterName, const Diablo& aDiablo, int aStr
     ResetHealth();
 }
 
-void Character::TakeDamage(int aDamage)
+Character::Character(const CharacterType& aType, const Diablo& aDiablo)
+    : Character(aType.GetName().c_str(), aDiablo, aType.GetBaseAttributes().strength, aType.GetBaseAttributes().agility, aType.GetBaseAttributes().vitality)
 {
-    if (aDamage <= 0)
-    {
-        return;
-    }
-    myHealth -= aDamage;
+    myType = aType;
 }
 
-void Character::SetStrength(int aStrength)
+Character::Character(const CharacterType& aType, const Diablo& aDiablo, const int aStrength, const int aAgility, const int aVitality)
+    : Character(aType.GetName().c_str(), aDiablo, aStrength, aAgility, aVitality)
 {
-    myAttributes.strength = aStrength;
+    myType = aType;
 }
 
-void Character::SetAgility(int aAgility)
+CharacterAttributes Character::GetAttributes() const
 {
-    myAttributes.agility = aAgility;
-}
-
-void Character::SetVitality(int aVitality)
-{
-    myAttributes.vitality = aVitality;
+    CharacterAttributes attributes;
+    attributes.strength = GetStrength();
+    attributes.agility = GetAgility();
+    attributes.vitality = GetVitality();
+    return attributes;
 }
 
 StatModifiers Character::GetTotalModifiers() const
@@ -131,22 +111,15 @@ StatModifiers Character::GetTotalModifiers() const
     StatModifiers total;
     for (const Item& item : myInventory)
     {
-        total += item.GetModifiers();
+        total.Add(item.GetModifiers());
     }
+    
     for (const Spell& spell : myActiveSpells)
     {
-        total += spell.GetModifiers();
+        total.Add(spell.GetModifiers());
     }
+    
     return total;
-}
-
-CharacterAttributes Character::GetAttributes() const
-{
-    CharacterAttributes attr;
-    attr.strength = GetStrength();
-    attr.agility = GetAgility();
-    attr.vitality = GetVitality();
-    return attr;
 }
 
 int Character::GetStrength() const
@@ -166,45 +139,30 @@ int Character::GetVitality() const
 
 int Character::GetAttackValue() const
 {
-    int base = GetStrength() * GetAgility();
-    int result = base + GetTotalModifiers().attack;
+    const int base = myUseDirectStats ? myAttack : (GetStrength() * GetAgility());
+    const int result = base + GetTotalModifiers().attack;
     return Min(result, 0);
 }
 
 int Character::GetDefense() const
 {
-    int base = GetVitality() + GetAgility();
-    int result = base + GetTotalModifiers().defense;
+    const int base = myUseDirectStats ? myDefense : (GetVitality() + GetAgility());
+    const int result = base + GetTotalModifiers().defense;
     return Min(result, 0);
 }
 
 int Character::GetMaxHealth() const
 {
-    int base = GetVitality() * 4 + GetStrength() * 6 + GetAgility() * 3;
-    int result = base + GetTotalModifiers().maxHealth;
+    const int base = myUseDirectStats ? myMaxHealth : (GetVitality() * 4 + GetStrength() * 6 + GetAgility() * 3);
+    const int result = base + GetTotalModifiers().maxHealth;
     return Min(result, 1);
 }
 
 int Character::GetCarryCapacity() const
 {
-    int base = GetStrength() + GetAgility() / 3;
-    int result = base + GetTotalModifiers().carryCapacity;
+    const int base = GetStrength() + GetAgility() / 3;
+    const int result = base + GetTotalModifiers().carryCapacity;
     return Min(result, 0);
-}
-
-int Character::GetInventoryWeight() const
-{
-    int totalWeight = 0;
-    for (const Item& item : myInventory)
-    {
-        totalWeight += item.GetWeight();
-    }
-    return totalWeight;
-}
-
-bool Character::CanCarry(int aWeight) const
-{
-    return (GetInventoryWeight() + aWeight) <= GetCarryCapacity();
 }
 
 bool Character::AddItem(const Item& aItem)
@@ -214,16 +172,14 @@ bool Character::AddItem(const Item& aItem)
         myInventory.push_back(aItem);
         return true;
     }
+    
     return false;
 }
 
 void Character::AddSpell(const Spell& aSpell)
 {
     myActiveSpells.push_back(aSpell);
-    if (myHealth > GetMaxHealth())
-    {
-        myHealth = GetMaxHealth();
-    }
+    myHealth = Max(myHealth, GetMaxHealth());
 }
 
 void Character::TickSpells()
@@ -232,9 +188,7 @@ void Character::TickSpells()
     {
         if (it->Tick())
         {
-            std::cout << ConsoleColors::StartColor(ConsoleColors::YELLOW)
-                      << "Spell effect expired: " << it->GetName()
-                      << ConsoleColors::EndColor() << '\n';
+            std::cout << ConsoleColors::StartColor(Color::Yellow) << "Spell effect expired: " << it->GetName() << ConsoleColors::EndColor() << '\n';
             it = myActiveSpells.erase(it);
         }
         else
@@ -242,13 +196,72 @@ void Character::TickSpells()
             ++it;
         }
     }
-    if (myHealth > GetMaxHealth())
+    
+    myHealth = Max(myHealth, GetMaxHealth());
+}
+
+int Character::GetInventoryWeight() const
+{
+    int totalWeight = 0;
+    for (const Item& item : myInventory)
     {
-        myHealth = GetMaxHealth();
+        totalWeight += item.GetWeight();
     }
+    
+    return totalWeight;
+}
+
+bool Character::CanCarry(const int aWeight) const
+{
+    return (GetInventoryWeight() + aWeight) <= GetCarryCapacity();
+}
+
+void Character::TakeDamage(int aDamage)
+{
+    aDamage = Min(aDamage, 0);
+    myHealth -= aDamage;
+}
+
+void Character::SetStrength(const int aStrength)
+{
+    myAttributes.strength = aStrength;
+}
+
+void Character::SetAgility(const int aAgility)
+{
+    myAttributes.agility = aAgility;
+}
+
+void Character::SetVitality(const int aVitality)
+{
+    myAttributes.vitality = aVitality;
 }
 
 void Character::ResetHealth()
 {
     myHealth = GetMaxHealth();
+}
+
+void Character::SetAttack(const int aAttack)
+{
+    myAttack = aAttack;
+    myUseDirectStats = true;
+}
+
+void Character::SetDefense(const int aDefense)
+{
+    myDefense = aDefense;
+    myUseDirectStats = true;
+}
+
+void Character::SetMaxHealth(const int aMaxHealth)
+{
+    myMaxHealth = aMaxHealth;
+    myHealth = aMaxHealth;
+    myUseDirectStats = true;
+}
+
+void Character::SetHealth(const int aHealth)
+{
+    myHealth = aHealth;
 }

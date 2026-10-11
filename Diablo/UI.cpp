@@ -1,47 +1,45 @@
 ﻿#include "UI.h"
 
-#include <iostream>
-
 #include "Game.h"
 #include "Helpers.h"
 
 namespace MainMenu
 {
-    void Draw(Diablo& aDiablo, Game& aGame)
+    void Draw(Diablo& aDiablo)
     {
         constexpr int PLAY_GAME = 1;
         constexpr int ACTIVATE_CHEATS = 2;
-        constexpr int QUIT_GAME = 3;
+        constexpr int QUIT = 3;
         
         bool shouldQuit = false;
         while (!shouldQuit)
         {
             ClearScreen();
-            DrawMenuLine(LineType::Hyphen);
-            WriteLine("DIABLO");
-            DrawMenuLine(LineType::Hyphen);
+            DrawMenuLine(LineType::EqualSign);
+            WriteLine("MAIN MENU");
+            DrawMenuLine(LineType::EqualSign);
             WriteLine("[1] Play Game\n[2] Activate Cheats\n[3] Quit Game");
             
             int input = -1;
-            ForceInput(input, PLAY_GAME, QUIT_GAME);
+            ForceInput(input, PLAY_GAME, QUIT);
 
             switch (input)
             {
             case PLAY_GAME:
             {
                 ClearScreen();
-                Game newGame(aDiablo);
+                Game newGame = Game(aDiablo);
                 newGame.PlayGame(aDiablo);
                 break;
             }
             case ACTIVATE_CHEATS:
-                CheatsMenu::Draw(aDiablo, aGame);
+                CheatsMenu::Draw(aDiablo);
                 break;
-            case QUIT_GAME:
+            case QUIT:
                 shouldQuit = true;
                 break;
             default:
-                std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "ERROR. Invalid index." << ConsoleColors::EndColor();
+                std::cout << ConsoleColors::StartColor(Color::Magenta) << "Invalid input" << ConsoleColors::EndColor() << '\n';
                 break;
             }
         }
@@ -50,43 +48,50 @@ namespace MainMenu
 
 namespace CheatsMenu
 {
-    static std::string PrintState(bool& aState) 
+    namespace 
     {
-        return aState ? "ON" : "OFF";
-    }
-    
-    void Flip(bool& aToFlip) 
-    {
-        aToFlip = !aToFlip;
-    }
-    
-    void Redraw(Diablo& aDiablo)
-    {
-        DrawMenuLine(LineType::Hyphen);
-        WriteLine("CHEATS MENU");
-        DrawMenuLine(LineType::Hyphen);
+        std::string PrintState(const bool& aState)
+        {
+            return aState ? "ON" : "OFF";
+        }
         
-        std::string godModeState = PrintState(aDiablo.cheats.hasGodMode);
-        std::string instantHitState = PrintState(aDiablo.cheats.hasOneShot);
+        std::string ColorState(const bool aState, const std::string& aText)
+        {
+           return ConsoleColors::StartColor(aState ? Color::Green : Color::Red) + aText + ConsoleColors::EndColor();
+        }
         
-        std::cout << "[1] God Mode: " << ConsoleColors::StartColor(aDiablo.cheats.hasGodMode ? ConsoleColors::GREEN : ConsoleColors::RED) << godModeState << ConsoleColors::EndColor() << '\n';
-        std::cout << "[2] Instant Hit: " << ConsoleColors::StartColor(aDiablo.cheats.hasOneShot ? ConsoleColors::GREEN : ConsoleColors::RED) << instantHitState << ConsoleColors::EndColor() << '\n';
-        WriteLine("[3] Go Back");
+        void Flip(bool& aToFlip)
+        {
+            aToFlip = !aToFlip;
+        }
+
+        void Redraw(const Diablo& aDiablo)
+        {
+            DrawMenuLine(LineType::Dash);
+            WriteLine("CHEATS MENU");
+            DrawMenuLine(LineType::Dash);
+
+            const std::string godModeState = PrintState(aDiablo.cheats.hasGodMode);
+            const std::string oneShotState = PrintState(aDiablo.cheats.hasOneShot);
+            
+            std::cout << "[1] God Mode: " << ColorState(aDiablo.cheats.hasGodMode, godModeState) << '\n';
+            std::cout << "[2] One Shot: " <<ColorState(aDiablo.cheats.hasOneShot, oneShotState) << '\n';
+            WriteLine("[3] Go Back");
+        }
     }
     
-    void Draw(Diablo& aDiablo, Game& aGame)
+    void Draw(Diablo& aDiablo)
     {
         constexpr int GOD_MODE = 1;
-        constexpr int INSTANT_HIT = 2;
+        constexpr int ONE_SHOT = 2;
         constexpr int GO_BACK = 3;
-
+        
         bool shouldQuit = false;
         while (!shouldQuit)
         {
             ClearScreen();
             Redraw(aDiablo);
             int input = -1;
-            
             ForceInput(input, GOD_MODE, GO_BACK);
 
             switch (input)
@@ -94,14 +99,14 @@ namespace CheatsMenu
             case GOD_MODE:
                 Flip(aDiablo.cheats.hasGodMode);
                 break;
-            case INSTANT_HIT:
+            case ONE_SHOT:
                 Flip(aDiablo.cheats.hasOneShot);
                 break;
             case GO_BACK:
                 shouldQuit = true;
                 break;
             default:
-                std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "ERROR. Invalid index." << ConsoleColors::EndColor();
+                std::cout << ConsoleColors::StartColor(Color::Magenta) << "Invalid input" << ConsoleColors::EndColor() << '\n';
                 break;
             }
         }

@@ -1,14 +1,14 @@
-﻿#include "Game.h"
+#include "Game.h"
 
-#include <iostream>
-#include <random>
-#include <cstring>
 #include "BattleController.h"
 #include "Helpers.h"
 
-Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
+Game::Game(Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
 {
     this->myDiablo = aDiablo;
+    
+    myRooms = std::vector<Room>();
+    myDoors = std::vector<Door>();
     
     Room entranceRoom = Room("Entrance", aDiablo);
     Room cathedralRoom = Room("Cathedral", aDiablo);
@@ -16,11 +16,11 @@ Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     Room kitchenRoom = Room("Kitchen", aDiablo);
     Room cellsRoom = Room("Cells", aDiablo);
     
-    entranceRoom.SetId(0);
-    cathedralRoom.SetId(1);
-    armoryRoom.SetId(2);
-    kitchenRoom.SetId(3);
-    cellsRoom.SetId(4);
+    entranceRoom.SetId(Rooms::GetRoom(RoomType::EntranceRoom));
+    cathedralRoom.SetId(Rooms::GetRoom(RoomType::CathedralRoom));
+    armoryRoom.SetId(Rooms::GetRoom(RoomType::ArmoryRoom));
+    kitchenRoom.SetId(Rooms::GetRoom(RoomType::KitchenRoom));
+    cellsRoom.SetId(Rooms::GetRoom(RoomType::CellsRoom));
     
     entranceRoom.AddConnection(cathedralRoom);
     
@@ -39,12 +39,11 @@ Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     constexpr int LONE_WOLF = 1;
     constexpr int DUO = 2;
     constexpr int TRIO = 3;
-    constexpr int SQUAD = 4;
     
     int cathedralEnemyCount = GetRandomNumber(EMPTY, LONE_WOLF);
     int armoryEnemyCount = GetRandomNumber(EMPTY, DUO);
     int kitchenEnemyCount = GetRandomNumber(EMPTY, TRIO);
-    int cellsEnemyCount = GetRandomNumber(EMPTY, SQUAD);
+    int cellsEnemyCount = GetRandomNumber(EMPTY, LONE_WOLF);
     
     int i;
     for (i = 0; i < cathedralEnemyCount; i++)
@@ -64,33 +63,25 @@ Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     
     for (i = 0; i < cellsEnemyCount; i++)
     {
-        AddRandomEnemyToRoom(cellsRoom, aDiablo, 0, 4);
+        AddRandomEnemyToRoom(cellsRoom, aDiablo, 4, 4);
     }
     
-    // Add starting items, chests, and spells to rooms
-    // StatModifiers(strength, agility, vitality, attack, defense, maxHealth, carryCapacity)
-    entranceRoom.AddItem(Item("Worn Dagger", 1, StatModifiers(0, 0, 0, 1, 0, 0, 0)));
-    entranceRoom.AddItem(Item("Traveler's Boots", 1, StatModifiers(0, 1, 0, 0, 1, 0, 0)));
+    LoreItems* loreItems = &aDiablo.loreItems;
+    LoreChests* loreChests = &aDiablo.loreChests;
+    LoreSpells* loreSpells = &aDiablo.loreSpells;
     
-    Chest cathedralChest("Altar Chest");
-    cathedralChest.AddItem(Item("Blessed Mace", 3, StatModifiers(2, 0, 0, 4, 0, 0, 0)));
-    cathedralChest.AddItem(Item("Holy Relic", 1, StatModifiers(0, 0, 2, 0, 0, 20, 0)));
-    cathedralRoom.AddChest(cathedralChest);
-    cathedralRoom.AddSpell(Spell("Prayer of Fortitude", 5, StatModifiers(0, 0, 2, 0, 5, 20, 0)));
+    entranceRoom.AddItem(loreItems->wornDagger);
     
-    armoryRoom.AddItem(Item("Heavy Steel Armor", 5, StatModifiers(0, -1, 1, 0, 6, 30, 0)));
-    armoryRoom.AddItem(Item("Greatsword", 4, StatModifiers(3, 0, 0, 5, 0, 0, 0)));
-    Chest armoryChest("Armory Cache");
-    armoryChest.AddItem(Item("Tower Shield", 4, StatModifiers(0, 0, 1, 0, 5, 0, 0)));
-    armoryChest.AddItem(Item("Ring of Might", 0, StatModifiers(3, 0, 0, 0, 0, 0, 0)));
-    armoryRoom.AddChest(armoryChest);
-    armoryRoom.AddSpell(Spell("War Cry", 4, StatModifiers(2, 0, 0, 6, 0, 0, 0)));
+    loreChests->altarChest.AddItem(loreItems->travelersBoots);
+    loreChests->altarChest.AddItem(loreItems->backpack);
     
-    kitchenRoom.AddItem(Item("Chef's Cleaver", 2, StatModifiers(0, 0, 0, 3, 0, 0, 0)));
-    kitchenRoom.AddItem(Item("Hearty Stew", 1, StatModifiers(0, 0, 2, 0, 0, 15, 0)));
-    kitchenRoom.AddSpell(Spell("Feast of Agility", 5, StatModifiers(0, 3, 0, 0, 0, 0, 2)));
+    cathedralRoom.AddChest(loreChests->altarChest);
     
-    cellsRoom.AddItem(Item("Hero's Trophy", 1, StatModifiers(2, 2, 2, 0, 0, 0, 0)));
+    armoryRoom.AddSpell(loreSpells->warCry);
+    armoryRoom.AddSpell(loreSpells->blessingsOfTheTraveler);
+    armoryRoom.AddSpell(loreSpells->mightOfTheWarrior);
+    
+    kitchenRoom.AddItem(loreItems->trophyOfTheHero);
     
     myRooms.push_back(entranceRoom);
     myRooms.push_back(cathedralRoom);
@@ -98,16 +89,20 @@ Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     myRooms.push_back(kitchenRoom);
     myRooms.push_back(cellsRoom);
     
-    Door entranceDoor = Door(myRooms[0], aDiablo);
-    Door cathedralDoor = Door(myRooms[1], aDiablo);
-    Door armoryDoor = Door(myRooms[2], aDiablo);
-    armoryDoor.SetLocked(true, 3, 4);
+    Door entranceDoor = Door(myRooms[Rooms::GetRoom(RoomType::EntranceRoom)], aDiablo);
+    Door cathedralDoor = Door(myRooms[Rooms::GetRoom(RoomType::CathedralRoom)], aDiablo);
+    Door armoryDoor = Door(myRooms[Rooms::GetRoom(RoomType::ArmoryRoom)], aDiablo);
     
-    Door kitchenDoor = Door(myRooms[3], aDiablo);
-    kitchenDoor.SetLocked(true, 5, 4);
+    int maxRequiredStrength = myPlayer.GetStrength();
+    int maxRequiredAgility = myPlayer.GetAgility();
     
-    Door cellsDoor = Door(myRooms[4], aDiablo);
-    cellsDoor.SetLocked(true, 5, 5);
+    armoryDoor.SetLocked(true, GetRandomNumber(1, maxRequiredStrength), GetRandomNumber(1, maxRequiredAgility));
+    
+    Door kitchenDoor = Door(myRooms[Rooms::GetRoom(RoomType::KitchenRoom)], aDiablo);
+    kitchenDoor.SetLocked(true, GetRandomNumber(1, maxRequiredStrength), GetRandomNumber(1, maxRequiredAgility));
+    
+    Door cellsDoor = Door(myRooms[Rooms::GetRoom(RoomType::CellsRoom)], aDiablo);
+    cellsDoor.SetLocked(true, GetRandomNumber(1, maxRequiredStrength), GetRandomNumber(1, maxRequiredAgility));
     
     myDoors.push_back(entranceDoor);
     myDoors.push_back(cathedralDoor);
@@ -116,69 +111,9 @@ Game::Game(const Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     myDoors.push_back(cellsDoor);
 }
 
-void Game::AddRandomEnemyToRoom(Room& aRoom, const Diablo& aDiablo, int lowestIndex, int highestIndex) const
+void Game::AddRandomEnemyToRoom(Room& aRoom, const Diablo& aDiablo, const int aLowestIndex, const int aHighestIndex) const
 {
-    Diablo enemyDiablo = aDiablo;
-    enemyDiablo.cheats.hasGodMode = false;
-    enemyDiablo.cheats.hasOneShot = false;
-
-    int pickedEnemy = GetRandomNumber(lowestIndex, highestIndex);
-    
-    constexpr int SKELETON_ID = 0;
-    constexpr int WRAITH_ID = 1;
-    constexpr int BRAWLER_ID = 2;
-    constexpr int UNDEAD_ID = 3;
-    constexpr int TITAN_ID = 4;
-    
-    Character character;
-    
-    switch (pickedEnemy)
-    {
-    case SKELETON_ID:
-        {
-            constexpr int MIN_SKELETON_SKILL = 1;
-            constexpr int MAX_SKELETON_SKILL = 2;
-        
-            character = Character("Skeleton", enemyDiablo, GetRandomNumber(MIN_SKELETON_SKILL, MAX_SKELETON_SKILL), GetRandomNumber(MIN_SKELETON_SKILL, MAX_SKELETON_SKILL), GetRandomNumber(MIN_SKELETON_SKILL, MAX_SKELETON_SKILL));
-        }
-        break;
-    case WRAITH_ID:
-        {
-            constexpr int MIN_WRAITH_SKILL = 2;
-            constexpr int MAX_WRAITH_SKILL = 3;
-        
-            character = Character("Wraith", enemyDiablo, GetRandomNumber(MIN_WRAITH_SKILL, MAX_WRAITH_SKILL), GetRandomNumber(MIN_WRAITH_SKILL, MAX_WRAITH_SKILL), GetRandomNumber(MIN_WRAITH_SKILL, MAX_WRAITH_SKILL));
-        }
-        break;
-    case BRAWLER_ID:
-        {
-            constexpr int MIN_BRAWLER_SKILL = 3;
-            constexpr int MAX_BRAWLER_SKILL = 4;
-        
-            character = Character("Brawler", enemyDiablo, GetRandomNumber(MIN_BRAWLER_SKILL, MAX_BRAWLER_SKILL - 1), GetRandomNumber(MIN_BRAWLER_SKILL, MAX_BRAWLER_SKILL - 2), GetRandomNumber(MIN_BRAWLER_SKILL, MAX_BRAWLER_SKILL));
-        }
-        break;
-    case UNDEAD_ID:
-        {
-            constexpr int MIN_UNDEAD_SKILL = 4;
-            constexpr int MAX_UNDEAD_SKILL = 5;
-        
-            character = Character("Undead", enemyDiablo, GetRandomNumber(MIN_UNDEAD_SKILL, MAX_UNDEAD_SKILL), GetRandomNumber(MIN_UNDEAD_SKILL, MAX_UNDEAD_SKILL), GetRandomNumber(MIN_UNDEAD_SKILL, MAX_UNDEAD_SKILL));
-        }
-        break;
-    case TITAN_ID:
-        {
-            constexpr int MIN_TITAN_SKILL = 4;
-            constexpr int MAX_TITAN_SKILL = 6;
-        
-            character = Character("Titan", enemyDiablo, GetRandomNumber(MIN_TITAN_SKILL, MAX_TITAN_SKILL - 1), GetRandomNumber(MIN_TITAN_SKILL, MAX_TITAN_SKILL), GetRandomNumber(MIN_TITAN_SKILL, MAX_TITAN_SKILL - 1));
-        }
-        break;
-    default:
-        std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "Invalid enemy picked" << ConsoleColors::EndColor() << '\n';
-        break;
-    }
-    
+    Character character = myCharacterFactory.CreateRandomEnemy(aDiablo, aLowestIndex, aHighestIndex);
     aRoom.AddEnemy(character);
 }
 
@@ -197,11 +132,11 @@ void Game::PlayGame(const Diablo& aDiablo)
             while (!currentRoom.IsRoomCleared() && myPlayer.IsAlive())
             {
                 currentRoom.EnterCombat(*this);
-                
-                int viewStatsIndex = currentRoom.GetEnemyCount() + 1;
-                int viewInventoryIndex = currentRoom.GetEnemyCount() + 2;
+
+                const int viewStatsIndex = currentRoom.GetEnemyCount() + 1;
+                const int viewInventoryIndex = viewStatsIndex + 1;
                 int enemyChoice = -1;
-                ForceInput(enemyChoice, 1, viewInventoryIndex);
+                ForceInput(enemyChoice, 1, viewStatsIndex);
                 
                 if (enemyChoice == viewStatsIndex)
                 {
@@ -226,7 +161,7 @@ void Game::PlayGame(const Diablo& aDiablo)
             {
                 ClearScreen();
                 DrawBreakerLine(LineType::EqualSign);
-                std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "You have died! Game Over." << ConsoleColors::EndColor() << '\n';
+                std::cout << ConsoleColors::StartColor(Color::Red) << "You have died! Game Over." << ConsoleColors::EndColor() << '\n';
                 DrawBreakerLine(LineType::EqualSign);
                 Pause();
                 return;
@@ -234,63 +169,92 @@ void Game::PlayGame(const Diablo& aDiablo)
             
             ClearScreen();
             DrawBreakerLine(LineType::EqualSign);
-            std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "Room cleared!" << ConsoleColors::EndColor() << '\n';
+            std::cout << ConsoleColors::StartColor(Color::Green) << "Room cleared!" << ConsoleColors::EndColor() << '\n';
             DrawBreakerLine(LineType::EqualSign);
             Pause();
         }
         
-        if (currentRoom.GetId() == 4 || strcmp(currentRoom.GetName(), "Cells") == 0)
+        if (currentRoom.GetId() == Rooms::GetRoom(RoomType::CellsRoom) || strcmp(currentRoom.GetName(), "Cells") == 0)
         {
             ClearScreen();
             DrawBreakerLine(LineType::EqualSign);
             WriteLine("VICTORY SCREEN");
             DrawBreakerLine(LineType::EqualSign);
-            std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "Congratulations! You reached the Cells and won the game!" << ConsoleColors::EndColor() << '\n';
+            std::cout << ConsoleColors::StartColor(Color::Green) << "Congratulations! You reached the Cells and won the game!" << ConsoleColors::EndColor() << '\n';
             Pause();
             return;
         }
         
         ClearScreen();
-        DrawBreakerLine(LineType::Hyphen);
+        DrawBreakerLine(LineType::Dash);
         WriteLine(currentRoom.GetName());
-        DrawBreakerLine(LineType::Hyphen);
-        
-        enum class OptionType { Move, PickItem, OpenChest, ReadSpell, ViewInventory, ViewStats };
-        struct ActionOption
-        {
-            OptionType type;
-            int data;
-            std::string label;
-        };
+        DrawBreakerLine(LineType::Dash);
         
         std::vector<ActionOption> options;
-        for (int connection = 0; connection < currentRoom.GetConnectionsCount(); connection++)
+        for (int connection = 0; connection < currentRoom.GetConnectionCount(); connection++)
         {
-            options.push_back({ OptionType::Move, connection, "Go to " + std::string(currentRoom.GetConnection(connection).GetName()) });
+            ActionOption action = {
+                OptionType::Move,
+                connection,
+                "Enter " + std::string(currentRoom.GetConnection(connection).GetName())
+            };
+            
+            options.push_back(action);
         }
         
         if (currentRoom.HasItems())
         {
-            options.push_back({ OptionType::PickItem, 0, "Pick up item from floor" });
+             ActionOption action = {
+                OptionType::PickItem,
+                0,
+                "Pick up item from the floor"
+            };
+            
+            options.push_back(action);
         }
         
         if (currentRoom.HasChests())
         {
-            options.push_back({ OptionType::OpenChest, 0, "Open chest" });
+             ActionOption action = {
+                OptionType::OpenChest,
+                0,
+                "Open chest"
+            };
+            
+            options.push_back(action);
         }
         
         if (currentRoom.HasSpells())
         {
-            options.push_back({ OptionType::ReadSpell, 0, "Read spell scroll" });
+             ActionOption action = {
+                OptionType::ReadSpell,
+                0,
+                "Read the scroll"
+            };
+            
+            options.push_back(action);
         }
         
-        options.push_back({ OptionType::ViewInventory, 0, "View inventory" });
-        options.push_back({ OptionType::ViewStats, 0, "View stats" });
+        ActionOption inventory = {
+            OptionType::ViewInventory,
+            0,
+            "View inventory"
+        };
+        
+         ActionOption stats = {
+                OptionType::ViewStats,
+                0,
+                "View stats"
+         };
+
+        options.push_back(inventory);
+        options.push_back(stats);
         
         for (size_t i = 0; i < options.size(); i++)
         {
-            std::cout << '[' << (i + 1) << "] " << options[i].label << '\n';
+            std::cout << '[' << i + 1 << "] " << options[i].text << '\n';
         }
+
         
         int choice = -1;
         ForceInput(choice, 1, static_cast<int>(options.size()));
@@ -311,10 +275,10 @@ void Game::PlayGame(const Diablo& aDiablo)
         else if (selected.type == OptionType::PickItem)
         {
             ClearScreen();
-            DrawBreakerLine(LineType::Hyphen);
+            DrawBreakerLine(LineType::Dash);
             std::cout << "Items on the floor in " << currentRoom.GetName() << ":\n";
-            DrawBreakerLine(LineType::Hyphen);
-            const auto& roomItems = currentRoom.GetItems();
+            DrawBreakerLine(LineType::Dash);
+            const std::vector<Item>& roomItems = currentRoom.GetItems();
             for (size_t i = 0; i < roomItems.size(); ++i)
             {
                 std::cout << '[' << (i + 1) << "] ";
@@ -331,19 +295,18 @@ void Game::PlayGame(const Diablo& aDiablo)
                 Item itemToPick = roomItems[itemIdx];
                 if (myPlayer.AddItem(itemToPick))
                 {
-                    std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN)
-                              << "You picked up " << itemToPick.GetName() << "!"
-                              << ConsoleColors::EndColor() << '\n';
+                    std::cout << ConsoleColors::StartColor(Color::Green) << "You picked up " << itemToPick.GetName() << "!" << ConsoleColors::EndColor() << '\n';
+                    if (myPlayer.GetHealth() != myPlayer.GetMaxHealth())
+                    {
+                        myPlayer.ResetHealth();
+                    }
+                    
                     currentRoom.RemoveItem(itemIdx);
                     myPlayer.TickSpells();
                 }
                 else
                 {
-                    std::cout << ConsoleColors::StartColor(ConsoleColors::RED)
-                              << "You cannot carry this item! Exceeds carry capacity ("
-                              << (myPlayer.GetInventoryWeight() + itemToPick.GetWeight()) << "/"
-                              << myPlayer.GetCarryCapacity() << " kg)."
-                              << ConsoleColors::EndColor() << '\n';
+                    std::cout << ConsoleColors::StartColor(Color::Red) << "You cannot carry this item! Exceeds carry capacity (" << (myPlayer.GetInventoryWeight() + itemToPick.GetWeight()) << "/" << myPlayer.GetCarryCapacity() << " kg)." << ConsoleColors::EndColor() << '\n';
                 }
                 Pause();
             }
@@ -351,10 +314,10 @@ void Game::PlayGame(const Diablo& aDiablo)
         else if (selected.type == OptionType::OpenChest)
         {
             ClearScreen();
-            DrawBreakerLine(LineType::Hyphen);
+            DrawBreakerLine(LineType::Dash);
             std::cout << "Chests in " << currentRoom.GetName() << ":\n";
-            DrawBreakerLine(LineType::Hyphen);
-            auto& roomChests = currentRoom.GetChests();
+            DrawBreakerLine(LineType::Dash);
+            std::vector<Chest>& roomChests = currentRoom.GetChests();
             for (size_t i = 0; i < roomChests.size(); ++i)
             {
                 std::cout << '[' << (i + 1) << "] " << roomChests[i].GetName() << '\n';
@@ -369,9 +332,8 @@ void Game::PlayGame(const Diablo& aDiablo)
                 int chestIdx = chestChoice - 1;
                 Chest& chest = roomChests[chestIdx];
                 std::vector<Item> dropped = chest.OpenAndTakeItems();
-                std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN)
-                          << "You opened " << chest.GetName() << "!\n"
-                          << ConsoleColors::EndColor();
+                std::cout << ConsoleColors::StartColor(Color::Green) << "You opened " << chest.GetName() << "!\n" << ConsoleColors::EndColor();
+                
                 if (dropped.empty())
                 {
                     std::cout << "The chest was empty.\n";
@@ -386,6 +348,7 @@ void Game::PlayGame(const Diablo& aDiablo)
                         currentRoom.AddItem(droppedItem);
                     }
                 }
+                
                 currentRoom.RemoveChest(chestIdx);
                 myPlayer.TickSpells();
                 Pause();
@@ -394,15 +357,17 @@ void Game::PlayGame(const Diablo& aDiablo)
         else if (selected.type == OptionType::ReadSpell)
         {
             ClearScreen();
-            DrawBreakerLine(LineType::Hyphen);
+            DrawBreakerLine(LineType::Dash);
             std::cout << "Spell scrolls in " << currentRoom.GetName() << ":\n";
-            DrawBreakerLine(LineType::Hyphen);
-            const auto& roomSpells = currentRoom.GetSpells();
+            DrawBreakerLine(LineType::Dash);
+            const std::vector<Spell>& roomSpells = currentRoom.GetSpells();
+            
             for (size_t i = 0; i < roomSpells.size(); ++i)
             {
                 std::cout << '[' << (i + 1) << "] ";
                 roomSpells[i].DisplayInfo();
             }
+            
             int backOption = static_cast<int>(roomSpells.size()) + 1;
             std::cout << '[' << backOption << "] Back\n";
             
@@ -413,9 +378,7 @@ void Game::PlayGame(const Diablo& aDiablo)
                 int spellIdx = spellChoice - 1;
                 Spell spellToActivate = roomSpells[spellIdx];
                 myPlayer.AddSpell(spellToActivate);
-                std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN)
-                          << "You read and activated " << spellToActivate.GetName() << "!"
-                          << ConsoleColors::EndColor() << '\n';
+                std::cout << ConsoleColors::StartColor(Color::Green) << "You read and activated " << spellToActivate.GetName() << "!" << ConsoleColors::EndColor() << '\n';
                 currentRoom.RemoveSpell(spellIdx);
                 myPlayer.TickSpells();
                 Pause();
@@ -438,14 +401,14 @@ void Game::PlayGame(const Diablo& aDiablo)
                     if (myPlayer.GetStrength() >= targetDoor.GetRequiredStrength())
                     {
                         targetDoor.SetLocked(false, 0, 0);
-                        std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "You broke the door open!" << ConsoleColors::EndColor() << '\n';
+                        std::cout << ConsoleColors::StartColor(Color::Green) << "You broke the door open!" << ConsoleColors::EndColor() << '\n';
                         Pause();
                         currentRoomIndex = targetRoomId;
                         myPlayer.TickSpells();
                     }
                     else
                     {
-                        std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "You are not strong enough to break the door!" << ConsoleColors::EndColor() << '\n';
+                        std::cout << ConsoleColors::StartColor(Color::Red) << "You are not strong enough to break the door!" << ConsoleColors::EndColor() << '\n';
                         Pause();
                     }
                 }
@@ -454,20 +417,16 @@ void Game::PlayGame(const Diablo& aDiablo)
                     if (myPlayer.GetAgility() >= targetDoor.GetRequiredAgility())
                     {
                         targetDoor.SetLocked(false, 0, 0);
-                        std::cout << ConsoleColors::StartColor(ConsoleColors::GREEN) << "You successfully picked the lock!" << ConsoleColors::EndColor() << '\n';
+                        std::cout << ConsoleColors::StartColor(Color::Green) << "You successfully picked the lock!" << ConsoleColors::EndColor() << '\n';
                         Pause();
                         currentRoomIndex = targetRoomId;
                         myPlayer.TickSpells();
                     }
                     else
                     {
-                        std::cout << ConsoleColors::StartColor(ConsoleColors::RED) << "You are not agile enough to lock pick the door!" << ConsoleColors::EndColor() << '\n';
+                        std::cout << ConsoleColors::StartColor(Color::Red) << "You are not agile enough to lock pick the door!" << ConsoleColors::EndColor() << '\n';
                         Pause();
                     }
-                }
-                else
-                {
-                    // Go back - stay in current room
                 }
             }
             else
