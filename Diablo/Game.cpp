@@ -69,19 +69,19 @@ Game::Game(Diablo& aDiablo) : myPlayer("Wanderer", aDiablo, 5, 4, 6)
     LoreItems* loreItems = &aDiablo.loreItems;
     LoreChests* loreChests = &aDiablo.loreChests;
     LoreSpells* loreSpells = &aDiablo.loreSpells;
-    
-    entranceRoom.AddItem(loreItems->wornDagger);
-    
-    loreChests->altarChest.AddItem(loreItems->travelersBoots);
-    loreChests->altarChest.AddItem(loreItems->backpack);
-    
+
+    entranceRoom.AddItem(myItemFactory.CreateItem(loreItems->wornDagger));
+
+    loreChests->altarChest.AddItem(myItemFactory.CreateItem(loreItems->travelersBoots));
+    loreChests->altarChest.AddItem(myItemFactory.CreateItem(loreItems->backpack));
+
     cathedralRoom.AddChest(loreChests->altarChest);
-    
+
     armoryRoom.AddSpell(loreSpells->warCry);
     armoryRoom.AddSpell(loreSpells->blessingsOfTheTraveler);
     armoryRoom.AddSpell(loreSpells->mightOfTheWarrior);
-    
-    kitchenRoom.AddItem(loreItems->trophyOfTheHero);
+
+    kitchenRoom.AddItem(myItemFactory.CreateItem(loreItems->trophyOfTheHero));
     
     myRooms.push_back(entranceRoom);
     myRooms.push_back(cathedralRoom);

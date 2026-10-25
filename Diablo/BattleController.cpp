@@ -2,7 +2,7 @@
 
 #include "Helpers.h"
 
-static void DropEnemyLoot(Room& aRoom, const Character& aDeadEnemy, const LoreItems& aLoreItems)
+static void DropEnemyLoot(Room& aRoom, const Character& aDeadEnemy, const LoreItems& aLoreItems, const ItemFactory& aItemFactory)
 {
     if (aLoreItems.enemyDrops.empty())
     {
@@ -16,8 +16,9 @@ static void DropEnemyLoot(Room& aRoom, const Character& aDeadEnemy, const LoreIt
     {
         const int dropCount = static_cast<int>(aLoreItems.enemyDrops.size());
         const int roll = GetRandomNumber(0, dropCount - 1);
-        
-        Item drop = aLoreItems.enemyDrops[roll];
+
+        ItemID dropID = aLoreItems.enemyDrops[roll];
+        Item drop = aItemFactory.CreateItem(dropID);
         aRoom.AddItem(drop);
         std::cout << ConsoleColors::StartColor(Color::Blue) << aDeadEnemy.GetCharacterName() << " dropped: ";
         drop.DisplayInfo();
@@ -108,7 +109,7 @@ void BattleController::BattleTurn(const Diablo& aDiablo, Game& aGame, Room& aRoo
     if (!targetEnemy.IsAlive())
     {
         std::cout << targetEnemy.GetCharacterName() << " has been defeated!\n";
-        DropEnemyLoot(aRoom, targetEnemy, aGame.GetDiablo().loreItems);
+        DropEnemyLoot(aRoom, targetEnemy, aGame.GetDiablo().loreItems, aGame.GetItemFactory());
     }
     
     for (int i = 0; i < aRoom.GetEnemyCount(); i++)

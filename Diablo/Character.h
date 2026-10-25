@@ -5,11 +5,6 @@
 #include "CharacterType.h"
 #include <vector>
 
-
-/*
- * Moving all of this will take a while.
- */
-
 class Character
 {
     Diablo myDiablo = {};

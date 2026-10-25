@@ -19,17 +19,17 @@ public:
     EnemyFactory();
     
     void Init();
-    void SetupEnemy(EnemyTypes aType, int aAttackDamage, int aDefense, int aHealth);
+    void SetupEnemy(EnemyArchetype aType, int aAttackDamage, int aDefense, int aHealth);
     
-    Character CreateEnemy(EnemyTypes aType) const;
-    Character CreateEnemy(EnemyTypes aType, const Diablo& aDiablo) const;
-    Character CreateEnemy(EnemyTypes aType, const Diablo& aDiablo, const CharacterFactory& aCharacterFactory) const;
+    Character CreateEnemy(EnemyArchetype aType) const;
+    Character CreateEnemy(EnemyArchetype aType, const Diablo& aDiablo) const;
+    Character CreateEnemy(EnemyArchetype aType, const Diablo& aDiablo, const CharacterFactory& aCharacterFactory) const;
     
     Character CreateRandomEnemy(int aLowestIndex = 0, int aHighestIndex = 4) const;
     Character CreateRandomEnemy(const Diablo& aDiablo, int aLowestIndex = 0, int aHighestIndex = 4) const;
     Character CreateRandomEnemy(const Diablo& aDiablo, const CharacterFactory& aCharacterFactory, int aLowestIndex = 0, int aHighestIndex = 4) const;
     
-    const CharacterType& GetArchetype(EnemyTypes aType) const;
-    const Character& GetEnemyPrototype(EnemyTypes aType) const;
-    static const char* GetEnemyName(EnemyTypes aType);
+    const CharacterType& GetArchetype(EnemyArchetype aType) const;
+    const Character& GetEnemyPrototype(EnemyArchetype aType) const;
+    static const char* GetEnemyName(EnemyArchetype aType);
 };

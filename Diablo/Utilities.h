@@ -120,7 +120,7 @@ struct ChestConfig
     int maxItemCount = 3;
 };
 
-enum class EnemyTypes
+enum class EnemyArchetype
 {
     Skeleton = 0,
     Wraith = 1,
@@ -132,7 +132,7 @@ enum class EnemyTypes
 
 struct Enemies
 {
-    static int GetType(const EnemyTypes aEnemyType)
+    static int GetType(const EnemyArchetype aEnemyType)
     {
         return static_cast<int>(aEnemyType);
     }
@@ -202,11 +202,19 @@ enum class LineType
     EqualSign
 };
 
-enum class ItemTypes
+enum class ItemID
 {
-    Dagger,
-    Sword,
-    Ring // No clue if I should have this but for now it can stay.
+    Item_Backpack,
+    Item_TravelerBoots,
+    Item_TrophyOfTheHero,
+    
+    Weapon_IronDagger,
+    Weapon_IronSword,
+    Weapon_StrangeOrb,
+    
+    Accessory_AgilityRing,
+    Accessory_VitalityRing,
+    Accessory_StrengthRing
 };
 
 enum class OptionType
@@ -229,20 +237,20 @@ struct ActionOption
 struct LoreItems
 {
     // Room-specific items
-    Item wornDagger = Item("Worn Dagger", 1, StatModifiers(0, 0, 0, 1, 0, 0, 0));
-    Item travelersBoots = Item("Traveler's Boots", 1, StatModifiers(0, 1, 0, 0, 1, 0, 0));
-    Item backpack = Item("Backpack", 1, StatModifiers(0, 0, 0, 0, 0, 0, 10));
-    Item trophyOfTheHero = Item("Trophy of the Hero", 10, StatModifiers(10, 10, 10, 20, 20, 20, 0));
+    ItemID wornDagger = ItemID::Weapon_IronDagger;
+    ItemID travelersBoots = ItemID::Item_TravelerBoots;
+    ItemID backpack = ItemID::Item_Backpack;
+    ItemID trophyOfTheHero = ItemID::Item_TrophyOfTheHero;
     
     // Items dropped by enemies
-    Item ironDagger = Item("Iron Dagger", 1, StatModifiers(1, 0, 0, 2, 0, 0, 0));
-    Item ironSword = Item("Iron Sword", 1, StatModifiers(2, 0, 0, 4, 0, 0, 0));
-    Item strangeOrb = Item("Strange Orb", 4, StatModifiers(3, 0, 3, 0, 3, 0, 0));
-    Item agilityRing = Item("Agility Ring", 5, StatModifiers(0, 2, 0, 0, 25, 0, 0));
-    Item vitalityRing = Item("Vitality Ring", 5, StatModifiers(0, 0, 2, 0, 0, 25, 0));
-    Item strengthRing = Item("Strength Ring", 5, StatModifiers(2, 0, 0, 25, 0, 0, 0));
+    ItemID ironDagger = ItemID::Weapon_IronDagger;
+    ItemID ironSword = ItemID::Weapon_IronSword;
+    ItemID strangeOrb = ItemID::Weapon_StrangeOrb;
+    ItemID agilityRing = ItemID::Accessory_AgilityRing;
+    ItemID vitalityRing = ItemID::Accessory_VitalityRing;
+    ItemID strengthRing = ItemID::Accessory_StrengthRing;
     
-    std::vector<Item> enemyDrops = 
+    std::vector<ItemID> enemyDrops =
     {
         ironDagger,
         ironSword,

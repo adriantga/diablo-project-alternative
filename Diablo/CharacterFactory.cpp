@@ -24,7 +24,7 @@ Character CharacterFactory::CreateCharacter(const std::string& aName, const Diab
     return Character(type, aDiablo, aStrength, aAgility, aVitality);
 }
 
-Character CharacterFactory::CreateEnemy(const EnemyTypes aType, const Diablo& aDiablo) const
+Character CharacterFactory::CreateEnemy(const EnemyArchetype aType, const Diablo& aDiablo) const
 {
     return myEnemyFactory.CreateEnemy(aType, aDiablo);
 }

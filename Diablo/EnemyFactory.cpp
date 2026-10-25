@@ -8,20 +8,26 @@ EnemyFactory::EnemyFactory()
     Init();
 }
 
-const char* EnemyFactory::GetEnemyName(const EnemyTypes aType)
+const char* EnemyFactory::GetEnemyName(const EnemyArchetype aType)
 {
     switch (aType)
     {
-    case EnemyTypes::Skeleton: return "Skeleton";
-    case EnemyTypes::Wraith:   return "Wraith";
-    case EnemyTypes::Brawler:  return "Brawler";
-    case EnemyTypes::Undead:   return "Undead";
-    case EnemyTypes::Titan:    return "Titan";
-    default:                   return "Unknown";
+    case EnemyArchetype::Skeleton: 
+        return "Skeleton";
+    case EnemyArchetype::Wraith:   
+        return "Wraith";
+    case EnemyArchetype::Brawler: 
+        return "Brawler";
+    case EnemyArchetype::Undead:   
+        return "Undead";
+    case EnemyArchetype::Titan:    
+        return "Titan";
+    default:                       
+        return "Unknown";
     }
 }
 
-void EnemyFactory::SetupEnemy(const EnemyTypes aType, const int aAttackDamage, const int aDefense, const int aHealth)
+void EnemyFactory::SetupEnemy(const EnemyArchetype aType, const int aAttackDamage, const int aDefense, const int aHealth)
 {
     const int index = static_cast<int>(aType);
     if (index < 0 || index >= ENEMY_TYPE_COUNT)
@@ -39,14 +45,14 @@ void EnemyFactory::SetupEnemy(const EnemyTypes aType, const int aAttackDamage, c
 
 void EnemyFactory::Init()
 {
-    SetupEnemy(EnemyTypes::Skeleton, 12, 2, 25);
-    SetupEnemy(EnemyTypes::Wraith, 14, 1, 20);
-    SetupEnemy(EnemyTypes::Brawler, 13, 5, 40);
-    SetupEnemy(EnemyTypes::Undead, 11, 4, 30);
-    SetupEnemy(EnemyTypes::Titan, 16, 8, 60);
+    SetupEnemy(EnemyArchetype::Skeleton, 12, 2, 25);
+    SetupEnemy(EnemyArchetype::Wraith, 14, 1, 20);
+    SetupEnemy(EnemyArchetype::Brawler, 13, 5, 40);
+    SetupEnemy(EnemyArchetype::Undead, 11, 4, 30);
+    SetupEnemy(EnemyArchetype::Titan, 16, 8, 60);
 }
 
-Character EnemyFactory::CreateEnemy(const EnemyTypes aType) const
+Character EnemyFactory::CreateEnemy(const EnemyArchetype aType) const
 {
     const int index = static_cast<int>(aType);
     if (index >= 0 && index < ENEMY_TYPE_COUNT)
@@ -54,17 +60,18 @@ Character EnemyFactory::CreateEnemy(const EnemyTypes aType) const
         Character newEnemy(myEnemyTypes[index]);
         return newEnemy;
     }
+    
     return Character();
 }
 
-Character EnemyFactory::CreateEnemy(const EnemyTypes aType, const Diablo& aDiablo) const
+Character EnemyFactory::CreateEnemy(const EnemyArchetype aType, const Diablo& aDiablo) const
 {
     Character newEnemy = CreateEnemy(aType);
     newEnemy.SetDiablo(aDiablo);
     return newEnemy;
 }
 
-Character EnemyFactory::CreateEnemy(const EnemyTypes aType, const Diablo& aDiablo, const CharacterFactory& /*aCharacterFactory*/) const
+Character EnemyFactory::CreateEnemy(const EnemyArchetype aType, const Diablo& aDiablo, const CharacterFactory& /*aCharacterFactory*/) const
 {
     return CreateEnemy(aType, aDiablo);
 }
@@ -72,7 +79,7 @@ Character EnemyFactory::CreateEnemy(const EnemyTypes aType, const Diablo& aDiabl
 Character EnemyFactory::CreateRandomEnemy(const int aLowestIndex, const int aHighestIndex) const
 {
     const int pickedTypeIndex = GetRandomNumber(aLowestIndex, aHighestIndex);
-    const EnemyTypes pickedType = static_cast<EnemyTypes>(pickedTypeIndex);
+    const EnemyArchetype pickedType = static_cast<EnemyArchetype>(pickedTypeIndex);
     return CreateEnemy(pickedType);
 }
 
@@ -88,7 +95,7 @@ Character EnemyFactory::CreateRandomEnemy(const Diablo& aDiablo, const Character
     return CreateRandomEnemy(aDiablo, aLowestIndex, aHighestIndex);
 }
 
-const CharacterType& EnemyFactory::GetArchetype(const EnemyTypes aType) const
+const CharacterType& EnemyFactory::GetArchetype(const EnemyArchetype aType) const
 {
     const int index = static_cast<int>(aType);
     if (index >= 0 && index < ENEMY_TYPE_COUNT)
@@ -98,12 +105,13 @@ const CharacterType& EnemyFactory::GetArchetype(const EnemyTypes aType) const
     return myEnemyTypes[0].GetCharacterType();
 }
 
-const Character& EnemyFactory::GetEnemyPrototype(const EnemyTypes aType) const
+const Character& EnemyFactory::GetEnemyPrototype(const EnemyArchetype aType) const
 {
     const int index = static_cast<int>(aType);
     if (index >= 0 && index < ENEMY_TYPE_COUNT)
     {
         return myEnemyTypes[index];
     }
+    
     return myEnemyTypes[0];
 }

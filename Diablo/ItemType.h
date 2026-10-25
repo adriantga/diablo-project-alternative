@@ -8,14 +8,14 @@ class ItemType
     std::string myName;
     int myWeight = 0;
     StatModifiers myModifiers;
-    ItemTypes myItemType = ItemTypes::Dagger;
+    ItemID myItemType = ItemID::Weapon_IronDagger;
     
 public:
     ItemType() = default;
-    ItemType(const std::string& aName, int aWeight, const StatModifiers& aModifiers, ItemTypes aType = ItemTypes::Dagger);
+    ItemType(const std::string& aName, int aWeight, const StatModifiers& aModifiers, ItemID aType = ItemID::Weapon_IronDagger);
     
     const std::string& GetName() const { return myName; }
     int GetWeight() const { return myWeight; }
     const StatModifiers& GetModifiers() const { return myModifiers; }
-    ItemTypes GetItemType() const { return myItemType; }
+    ItemID GetItemType() const { return myItemType; }
 };
