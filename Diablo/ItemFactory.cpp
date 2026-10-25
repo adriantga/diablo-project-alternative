@@ -6,33 +6,6 @@ ItemFactory::ItemFactory()
     Init();
 }
 
-const char* ItemFactory::GetItemName(const ItemID aType)
-{
-    switch (aType)
-    {
-    case ItemID::Item_Backpack:         
-        return "Backpack";
-    case ItemID::Item_TravelerBoots:    
-        return "Traveler's Boots";
-    case ItemID::Item_TrophyOfTheHero:   
-        return "Trophy of the Hero";
-    case ItemID::Weapon_IronDagger:     
-        return "Iron Dagger";
-    case ItemID::Weapon_IronSword:       
-        return "Iron Sword";
-    case ItemID::Weapon_StrangeOrb:     
-        return "Strange Orb";
-    case ItemID::Accessory_AgilityRing:  
-        return "Agility Ring";
-    case ItemID::Accessory_VitalityRing: 
-        return "Vitality Ring";
-    case ItemID::Accessory_StrengthRing: 
-        return "Strength Ring";
-    default:                            
-        return "Unknown";
-    }
-}
-
 void ItemFactory::SetupItem(const ItemID aType, const std::string& aName, const int aWeight, const StatModifiers& aModifiers)
 {
     const int index = static_cast<int>(aType);
@@ -66,40 +39,4 @@ Item ItemFactory::CreateItem(const ItemID aType) const
     }
     
     return Item();
-}
-
-Item ItemFactory::CreateItem(const ItemType& aType) const
-{
-    return Item(aType);
-}
-
-Item ItemFactory::CreateItem(const ItemType& aType, const StatModifiers& aExtraModifiers) const
-{
-    return Item(aType, aExtraModifiers);
-}
-
-Item ItemFactory::CreateItem(const std::string& aName, const int aWeight, const StatModifiers& aModifiers, const ItemID aType) const
-{
-    ItemType type(aName, aWeight, aModifiers, aType);
-    return Item(aName, aWeight, aModifiers);
-}
-
-Item ItemFactory::CreateWeapon(const std::string& aName, const int aWeight, const int aAttack, const int aStrength) const
-{
-    StatModifiers mods;
-    mods.attack = aAttack;
-    mods.strength = aStrength;
-    ItemType weaponType(aName, aWeight, mods, ItemID::Weapon_IronSword);
-    return Item(aName, aWeight, mods);
-}
-
-Item ItemFactory::CreateAccessory(const std::string& aName, const int aWeight, const StatModifiers& aModifiers, const ItemID aType) const
-{
-    ItemType accessoryType(aName, aWeight, aModifiers, aType);
-    return Item(aName, aWeight, aModifiers);
-}
-
-ItemType ItemFactory::CreateItemType(const std::string& aName, const int aWeight, const StatModifiers& aModifiers, const ItemID aType) const
-{
-    return ItemType(aName, aWeight, aModifiers, aType);
 }

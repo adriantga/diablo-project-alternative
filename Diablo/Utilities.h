@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "Chest.h"
-#include "Item.h"
 #include "Spell.h"
 
 class Character;
@@ -76,42 +75,6 @@ struct CharacterAttributes
     int strength;
     int agility;
     int vitality;
-};
-
-struct StatRandomizerConfig
-{
-private:
-    static constexpr int MIN_VALUE = 1;
-    static constexpr int MAX_BASE_SKILL = 10;
-    static constexpr int MAX_VALUE = 50;
-    
-public:
-    int minStrength = MIN_VALUE;
-    int maxStrength = MAX_BASE_SKILL;
-    int minAgility = MIN_VALUE;
-    int maxAgility = MAX_BASE_SKILL;
-    int minVitality = MIN_VALUE;
-    int maxVitality = MAX_BASE_SKILL;
-    int minHealth = MIN_VALUE;
-    int maxHealth = MAX_VALUE;
-    int minDefense = MIN_VALUE;
-    int maxDefense = MAX_VALUE;
-    int minAttack = MIN_VALUE;
-    int maxAttack = MAX_VALUE;
-};
-
-struct ItemConfig
-{
-    std::vector<const char*> itemStarter = {"Trophy of the"};
-    std::vector<const char*> itemAccessory = {"Amulet", "Ring", "Helmet", "Chestplate", "Leggings", "Boots", "Backpack"};
-    std::vector<const char*> itemWeapon = {"Sword", "Dagger", "Halberd", "Battle Axe", "Kunai", "Katana"};
-};
-
-struct SpellConfig
-{
-    int minDuration = 1;
-    int maxDuration = 10;
-    std::vector<const char*> spellStarter = { "Blessings of the", "Might of the", "War Cry of the", "Soul of the" };
 };
 
 struct ChestConfig

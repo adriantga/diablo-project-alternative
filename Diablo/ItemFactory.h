@@ -12,21 +12,10 @@ public:
 
 private:
     ItemType myItemTypes[ITEM_TYPE_COUNT];
-
-public:
-    ItemFactory();
-    
-    void Init();
     void SetupItem(ItemID aType, const std::string& aName, int aWeight, const StatModifiers& aModifiers);
     
+public:
+    ItemFactory();
+    void Init();
     Item CreateItem(ItemID aType) const;
-    Item CreateItem(const ItemType& aType) const;
-    Item CreateItem(const ItemType& aType, const StatModifiers& aExtraModifiers) const;
-    Item CreateItem(const std::string& aName, int aWeight, const StatModifiers& aModifiers, ItemID aType = ItemID::Weapon_IronDagger) const;
-    
-    Item CreateWeapon(const std::string& aName, int aWeight, int aAttack, int aStrength = 0) const;
-    Item CreateAccessory(const std::string& aName, int aWeight, const StatModifiers& aModifiers, ItemID aType = ItemID::Accessory_AgilityRing) const;
-    
-    ItemType CreateItemType(const std::string& aName, int aWeight, const StatModifiers& aModifiers, ItemID aType = ItemID::Weapon_IronDagger) const;
-    static const char* GetItemName(ItemID aType);
 };
