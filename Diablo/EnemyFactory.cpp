@@ -1,5 +1,4 @@
 #include "EnemyFactory.h"
-#include "CharacterFactory.h"
 #include "Character.h"
 #include "Helpers.h"
 
@@ -105,7 +104,7 @@ const CharacterType& EnemyFactory::GetArchetype(const EnemyArchetype aType) cons
     return myEnemyTypes[0].GetCharacterType();
 }
 
-const Character& EnemyFactory::GetEnemyPrototype(const EnemyArchetype aType) const
+const Character& EnemyFactory::GetArchetypeCharacter(const EnemyArchetype aType) const
 {
     const int index = static_cast<int>(aType);
     if (index >= 0 && index < ENEMY_TYPE_COUNT)

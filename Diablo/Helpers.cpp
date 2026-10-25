@@ -148,7 +148,7 @@ void Pause()
     DoCommand("pause");
 }
 
-void WriteLine(const char* aText, bool aNewLine)
+void WriteLine(const char* aText, const bool aNewLine)
 {
     std::cout << aText << (aNewLine ? '\n' : '\0');
 }
@@ -178,11 +178,7 @@ void ForceInput(int& aInput, const int aMin, const int aMax)
     }
 }
 
-/*
- * In the future I shall combine these two and replace them with a 'DrawLine' method.
- * I don't have time to do that now, so I'll try to get it done for 4.3!
- */
-void DrawMenuLine(LineType aLineType)
+void DrawMenuLine(const LineType aLineType)
 {
     switch (aLineType)
     {
@@ -201,7 +197,7 @@ void ClearInput()
     std::cin.ignore(10000, '\n');
 }
 
-void DrawBreakerLine(LineType aLineType)
+void DrawBreakerLine(const LineType aLineType)
 {
     switch (aLineType)
     {

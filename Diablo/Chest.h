@@ -12,6 +12,7 @@ class Chest
     
 public:
     Chest() = default;
+   
     Chest(const std::string aName) : myName(aName)
     {
         
@@ -39,5 +40,4 @@ public:
         myItems.clear();
         return dropped;
     }
-    
 };

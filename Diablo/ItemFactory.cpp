@@ -1,5 +1,4 @@
 #include "ItemFactory.h"
-#include "Helpers.h"
 
 ItemFactory::ItemFactory()
 {

@@ -6,12 +6,6 @@
 #include "CharacterFactory.h"
 #include "ItemFactory.h"
 
-/*
- * TASKS FOR THIS WEEKEND:
- * - Fix the debug assertion error(provided it to myself...) [DONE]
- * - Actually finish the factories. [DONE]
- */
-
 class Game
 {
     Character myPlayer;

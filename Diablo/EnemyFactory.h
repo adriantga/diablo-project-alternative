@@ -30,6 +30,6 @@ public:
     Character CreateRandomEnemy(const Diablo& aDiablo, const CharacterFactory& aCharacterFactory, int aLowestIndex = 0, int aHighestIndex = 4) const;
     
     const CharacterType& GetArchetype(EnemyArchetype aType) const;
-    const Character& GetEnemyPrototype(EnemyArchetype aType) const;
+    const Character& GetArchetypeCharacter(EnemyArchetype aType) const;
     static const char* GetEnemyName(EnemyArchetype aType);
 };

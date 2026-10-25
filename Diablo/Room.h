@@ -22,7 +22,6 @@ class Room
     std::vector<Spell> mySpells = {};
     
     int GetCount(const size_t aType) const { return static_cast<int>(aType); }
-    
 public:
     Room(const char* aName, const Diablo& aDiablo);
     void AddConnection(const Room& aRoom);

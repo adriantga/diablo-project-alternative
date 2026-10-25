@@ -3,7 +3,7 @@
 #include "Utilities.h"
 
 Item::Item()
-    : myType(nullptr), myName(""), myWeight(0), myModifiers(new StatModifiers())
+    : myName(""), myModifiers(new StatModifiers())
 {
 }
 
@@ -23,6 +23,7 @@ Item& Item::operator=(const Item& aOther)
         delete myModifiers;
         myModifiers = aOther.myModifiers ? new StatModifiers(*aOther.myModifiers) : new StatModifiers();
     }
+    
     return *this;
 }
 
@@ -33,7 +34,7 @@ Item::~Item()
 }
 
 Item::Item(const std::string& aName, const int aWeight, const StatModifiers& aModifiers)
-    : myType(nullptr), myName(aName), myWeight(aWeight), myModifiers(new StatModifiers(aModifiers))
+    : myName(aName), myWeight(aWeight), myModifiers(new StatModifiers(aModifiers))
 {
 }
 
